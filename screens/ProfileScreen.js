@@ -2,16 +2,16 @@ import React, { useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Alert, Image, ActionSheetIOS, Platform } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Camera } from 'expo-camera';
-import * as LocalAuthentication from 'expo-local-authentication'; // Importação correta
+import * as LocalAuthentication from 'expo-local-authentication';
 
-export default function ProfileScreen({ route }) {
+export default function ProfileScreen({ route, navigation }) {
   const { name } = route.params;
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [timeStamp, setTimeStamp] = useState(null);
   const [profileImage, setProfileImage] = useState('https://via.placeholder.com/150');
 
   async function handleAuthentication() {
-    const isBiometricEnrolled = await LocalAuthentication.isEnrolledAsync(); // Certifique-se de usar LocalAuthentication corretamente
+    const isBiometricEnrolled = await LocalAuthentication.isEnrolledAsync();
     if (!isBiometricEnrolled) {
       return Alert.alert('Login', 'Nenhuma biometria encontrada. Por favor, cadastre uma biometria no dispositivo.');
     }
@@ -23,8 +23,14 @@ export default function ProfileScreen({ route }) {
 
     if (auth.success) {
       setIsAuthenticated(true);
-      const currentTime = new Date().toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo' });
-      setTimeStamp(`${name} bateu o ponto às ${currentTime}`);
+      const currentTime = new Date().toLocaleTimeString('pt-BR', {
+        timeZone: 'America/Sao_Paulo',
+        hour12: true,
+      });
+      const currentDate = new Date().toLocaleDateString('pt-BR', {
+        timeZone: 'America/Sao_Paulo',
+      });
+      setTimeStamp(`${name} bateu o ponto às ${currentTime} no dia ${currentDate}`);
     }
   }
 
@@ -100,6 +106,14 @@ export default function ProfileScreen({ route }) {
         <Text style={styles.buttonText}>MARCAR PONTO COM BIOMETRIA</Text>
       </TouchableOpacity>
       {isAuthenticated && <Text style={styles.timeStamp}>{timeStamp}</Text>}
+
+      {/* Botão para navegar para a tela de pontos */}
+      <TouchableOpacity
+        style={[styles.button, { marginTop: 20 }]}
+        onPress={() => navigation.navigate('PointsTable')}
+      >
+        <Text style={styles.buttonText}>VER PONTOS</Text>
+      </TouchableOpacity>
     </View>
   );
 }
