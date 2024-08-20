@@ -1,8 +1,25 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, StyleSheet } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { usePoints } from './PointsProvider'; // Importa o hook
 
 export default function PointsTableScreen({ route }) {
-  const { points } = route.params || { points: [] };
+  const { name } = route.params || { name: 'Nome padrão' };
+  const [points, setPoints] = useState([]);
+  
+  useEffect(() => {
+    async function loadPoints() {
+      const storedPoints = await AsyncStorage.getItem('points');
+      if (storedPoints) {
+        setPoints(JSON.parse(storedPoints));
+      } else if (route.params?.timeStamp) {
+        const newPoints = [route.params.timeStamp];
+        setPoints(newPoints);
+        await AsyncStorage.setItem('points', JSON.stringify(newPoints));
+      }
+    }
+    loadPoints();
+  }, [route.params]);
 
   return (
     <View style={styles.container}>
@@ -44,6 +61,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     marginTop: 20,
+    fontSize: 16,
     fontSize: 16,
     color: '#999',
     textAlign: 'center',

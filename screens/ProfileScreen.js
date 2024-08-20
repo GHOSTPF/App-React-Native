@@ -1,14 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Alert, Image, ActionSheetIOS, Platform } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Camera } from 'expo-camera';
 import * as LocalAuthentication from 'expo-local-authentication';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { usePoints } from './PointsProvider'; // Importa o hook
 
 export default function ProfileScreen({ route, navigation }) {
-  const { name } = route.params;
+  const { name } = route.params || { name: 'Nome padrão' };
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [timeStamp, setTimeStamp] = useState(null);
   const [profileImage, setProfileImage] = useState('https://via.placeholder.com/150');
+  const { points, setPoints } = usePoints(); // Usando o contexto
+
+  useEffect(() => {
+    async function loadData() {
+      const storedTimeStamp = await AsyncStorage.getItem('timeStamp');
+      if (storedTimeStamp) {
+        setTimeStamp(storedTimeStamp);
+      }
+    }
+    loadData();
+  }, []);
 
   async function handleAuthentication() {
     const isBiometricEnrolled = await LocalAuthentication.isEnrolledAsync();
@@ -30,7 +43,14 @@ export default function ProfileScreen({ route, navigation }) {
       const currentDate = new Date().toLocaleDateString('pt-BR', {
         timeZone: 'America/Sao_Paulo',
       });
-      setTimeStamp(`${name} bateu o ponto às ${currentTime} no dia ${currentDate}`);
+      const newTimeStamp = `${name} bateu o ponto às ${currentTime} no dia ${currentDate}`;
+      setTimeStamp(newTimeStamp);
+      await AsyncStorage.setItem('timeStamp', newTimeStamp);
+
+      // Atualiza o estado global de pontos
+      setPoints(prevPoints => [...prevPoints, newTimeStamp]);
+
+      navigation.navigate('PointsTableScreen', { name, timeStamp: newTimeStamp });
     }
   }
 
@@ -110,7 +130,7 @@ export default function ProfileScreen({ route, navigation }) {
       {/* Botão para navegar para a tela de pontos */}
       <TouchableOpacity
         style={[styles.button, { marginTop: 20 }]}
-        onPress={() => navigation.navigate('PointsTable')}
+        onPress={() => navigation.navigate('PointsTableScreen', { name, timeStamp })}
       >
         <Text style={styles.buttonText}>VER PONTOS</Text>
       </TouchableOpacity>
