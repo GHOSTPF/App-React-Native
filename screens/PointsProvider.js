@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState } from 'react';
 
 const PointsContext = createContext();
 
-export function PointsProvider({ children }) {
+export const PointsProvider = ({ children }) => {
   const [points, setPoints] = useState([]);
 
   return (
@@ -10,8 +10,6 @@ export function PointsProvider({ children }) {
       {children}
     </PointsContext.Provider>
   );
-}
+};
 
-export function usePoints() {
-  return useContext(PointsContext);
-}
+export const usePoints = () => useContext(PointsContext);

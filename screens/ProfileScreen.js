@@ -8,8 +8,6 @@ import { usePoints } from './PointsProvider'; // Importa o hook
 
 export default function ProfileScreen({ route, navigation }) {
   const { name } = route.params || { name: 'Nome padrão' };
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [timeStamp, setTimeStamp] = useState(null);
   const [profileImage, setProfileImage] = useState('https://via.placeholder.com/150');
   const { points, setPoints } = usePoints(); // Usando o contexto
 
@@ -35,7 +33,6 @@ export default function ProfileScreen({ route, navigation }) {
     });
 
     if (auth.success) {
-      setIsAuthenticated(true);
       const currentTime = new Date().toLocaleTimeString('pt-BR', {
         timeZone: 'America/Sao_Paulo',
         hour12: true,
@@ -44,8 +41,6 @@ export default function ProfileScreen({ route, navigation }) {
         timeZone: 'America/Sao_Paulo',
       });
       const newTimeStamp = `${name} bateu o ponto às ${currentTime} no dia ${currentDate}`;
-      setTimeStamp(newTimeStamp);
-      await AsyncStorage.setItem('timeStamp', newTimeStamp);
 
       // Atualiza o estado global de pontos
       setPoints(prevPoints => [...prevPoints, newTimeStamp]);
@@ -125,12 +120,13 @@ export default function ProfileScreen({ route, navigation }) {
       <TouchableOpacity style={styles.button} onPress={handleAuthentication}>
         <Text style={styles.buttonText}>MARCAR PONTO COM BIOMETRIA</Text>
       </TouchableOpacity>
-      {isAuthenticated && <Text style={styles.timeStamp}>{timeStamp}</Text>}
 
+      {/* Removido a exibição do timeStamp */}
+      
       {/* Botão para navegar para a tela de pontos */}
       <TouchableOpacity
         style={[styles.button, { marginTop: 20 }]}
-        onPress={() => navigation.navigate('PointsTableScreen', { name, timeStamp })}
+        onPress={() => navigation.navigate('PointsTableScreen')}
       >
         <Text style={styles.buttonText}>VER PONTOS</Text>
       </TouchableOpacity>
@@ -176,11 +172,5 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
-  },
-  timeStamp: {
-    marginTop: 24,
-    fontSize: 16,
-    color: '#4CAF50',
-    fontWeight: 'bold',
   },
 });
