@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { View, Text, FlatList, StyleSheet } from 'react-native';
-import { usePoints } from './PointsProvider'; 
+import { usePoints } from './PointsProvider';
 
 export default function PointsTableScreen({ route }) {
   const { points } = usePoints(); // Usando o contexto para obter os pontos
@@ -10,10 +10,19 @@ export default function PointsTableScreen({ route }) {
     const [namePart, rest] = point.split(' bateu o ponto às ');
     const [timePart, datePart] = rest.split(' no dia ');
 
+    // Função para obter o nome do dia da semana
+    const getDayOfWeek = (dateString) => {
+      const [day, month, year] = dateString.split('/').map(Number); // Assume que o formato da data é "dd/mm/yyyy"
+      const date = new Date(year, month - 1, day); // Cria um objeto Date
+      const daysOfWeek = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+      return daysOfWeek[date.getDay()];
+    };
+
     return {
-      name: namePart, // Nome da pessoa
-      time: timePart, // Horário com AM/PM
-      date: datePart, // Dia
+      name: namePart,  // Nome da pessoa
+      time: timePart,  // Horário com AM/PM
+      date: datePart,  // Dia
+      dayOfWeek: getDayOfWeek(datePart), // Nome do dia da semana
     };
   };
 
@@ -26,6 +35,7 @@ export default function PointsTableScreen({ route }) {
         <Text style={styles.headerCell}>Pessoa</Text>
         <Text style={styles.headerCell}>Horário</Text>
         <Text style={styles.headerCell}>Dia</Text>
+        <Text style={styles.headerCell}>Dia da Semana</Text>
       </View>
       <FlatList
         data={parsedPoints}
@@ -35,6 +45,7 @@ export default function PointsTableScreen({ route }) {
             <Text style={styles.cell}>{item.name}</Text>
             <Text style={styles.cell}>{item.time}</Text>
             <Text style={styles.cell}>{item.date}</Text>
+            <Text style={styles.cell}>{item.dayOfWeek}</Text>
           </View>
         )}
         ListEmptyComponent={<Text style={styles.emptyText}>Nenhum ponto marcado.</Text>}

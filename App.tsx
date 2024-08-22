@@ -5,6 +5,7 @@ import PointsTableScreen from './screens/PointsTableScreen';
 import LoginScreen from './screens/LoginScreen';
 import { PointsProvider } from './screens/PointsProvider'; // Certifique-se de importar corretamente
 import RegisterScreen from './screens/RegisterScreen';
+
 const Stack = createStackNavigator();
 
 export default function App() {
