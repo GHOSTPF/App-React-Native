@@ -27,36 +27,9 @@ export default function ProfileScreen({ route, navigation }) {
     loadData();
   }, []);
 
-  async function handleAuthentication() {
-    try {
-      const isBiometricEnrolled = await LocalAuthentication.isEnrolledAsync();
-      if (!isBiometricEnrolled) {
-        return Alert.alert('Login', 'Nenhuma biometria encontrada. Por favor, cadastre uma biometria no dispositivo.');
-      }
-
-      const auth = await LocalAuthentication.authenticateAsync({
-        promptMessage: 'Login com Biometria',
-        fallbackLabel: 'Biometria não reconhecida',
-      });
-
-      if (auth.success) {
-        const currentTime = new Date().toLocaleTimeString('pt-BR', {
-          timeZone: 'America/Sao_Paulo',
-          hour12: true,
-        });
-        const currentDate = new Date().toLocaleDateString('pt-BR', {
-          timeZone: 'America/Sao_Paulo',
-        });
-        const newTimeStamp = `${name} bateu o ponto às ${currentTime} no dia ${currentDate}`;
-
-        setPoints(prevPoints => [...prevPoints, newTimeStamp]);
-        await AsyncStorage.setItem('timeStamp', newTimeStamp);
-        
-        navigation.navigate('PointsTableScreen', { name, timeStamp: newTimeStamp });
-      }
-    } catch (error) {
-      console.error("Failed to authenticate", error);
-    }
+  function handleRegisterPoint() {
+    // Navegar para a tela de confirmação de ponto
+    navigation.navigate('PointConfirmationScreen', { name });
   }
 
   async function selectImageFromGallery() {
@@ -141,7 +114,7 @@ export default function ProfileScreen({ route, navigation }) {
 
       <View style={styles.actionButtons}>
         <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.roundButton} onPress={handleAuthentication}>
+          <TouchableOpacity style={styles.roundButton} onPress={handleRegisterPoint}>
             <Icon name="clock-o" size={20} color='white' />
           </TouchableOpacity>
           <Text style={styles.buttonText}>Registrar Ponto</Text>
