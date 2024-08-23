@@ -9,24 +9,10 @@ import { usePoints } from './PointsProvider';
 export default function PointConfirmationScreen({ route, navigation }) {
     const { name } = route.params;
     const { addPoint } = usePoints();
-    const { setPoints } = usePoints();
     const [location, setLocation] = useState(null);
+    const [address, setAddress] = useState('');
     const [dateTime, setDateTime] = useState('');
 
-    const handleConfirmPoint = () => {
-        const newPoint = {
-          name,
-          time: new Date().toLocaleTimeString(),
-          day: new Date().toLocaleDateString(),
-        };
-    
-        try {
-          addPoint(newPoint);
-          navigation.navigate('PointsTableScreen');
-        } catch (error) {
-          console.error("Failed to authenticate or register point", error);
-        }
-      };
     useEffect(() => {
         (async () => {
             const { status } = await Location.requestForegroundPermissionsAsync();
@@ -37,6 +23,15 @@ export default function PointConfirmationScreen({ route, navigation }) {
 
             const loc = await Location.getCurrentPositionAsync({});
             setLocation(loc);
+
+            const [reverseGeocode] = await Location.reverseGeocodeAsync({
+                latitude: loc.coords.latitude,
+                longitude: loc.coords.longitude,
+            });
+
+            const currentAddress = `${reverseGeocode.street}, ${reverseGeocode.streetNumber}`;
+            setAddress(currentAddress);
+
             const currentDateTime = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
             setDateTime(currentDateTime);
         })();
@@ -55,13 +50,11 @@ export default function PointConfirmationScreen({ route, navigation }) {
             });
 
             if (auth.success) {
-                const address = location 
-                    ? `Lat: ${location.coords.latitude}, Lon: ${location.coords.longitude}` 
-                    : 'Localização não disponível';
-
                 const newPoint = { name, dateTime, address };
 
-                setPoints(prevPoints => [...prevPoints, newPoint]);
+                addPoint(newPoint);
+                const storedPoints = await AsyncStorage.getItem('points');
+                const prevPoints = storedPoints ? JSON.parse(storedPoints) : [];
                 await AsyncStorage.setItem('points', JSON.stringify([...prevPoints, newPoint]));
 
                 navigation.navigate('PointsTableScreen');
@@ -78,9 +71,7 @@ export default function PointConfirmationScreen({ route, navigation }) {
             <View style={styles.infoContainer}>
                 <Text style={styles.infoText}>Nome: {name || 'Nome não disponível'}</Text>
                 <Text style={styles.infoText}>Data e Hora: {dateTime || 'Data e Hora não disponíveis'}</Text>
-                <Text style={styles.infoText}>Local: {location 
-                    ? `Lat: ${location.coords.latitude}, Lon: ${location.coords.longitude}` 
-                    : 'Localização não disponível'}</Text>
+                <Text style={styles.infoText}>Endereço: {address || 'Endereço não disponível'}</Text>
             </View>
             {location && (
                 <MapView

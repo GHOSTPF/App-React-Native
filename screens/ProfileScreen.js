@@ -5,7 +5,8 @@ import { Camera } from 'expo-camera';
 import * as LocalAuthentication from 'expo-local-authentication';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { usePoints } from './PointsProvider'; // Importa o hook
-import Icon from 'react-native-vector-icons/FontAwesome';
+import Icon from 'react-native-vector-icons/Feather';
+import { disableErrorHandling } from 'expo';
 
 export default function ProfileScreen({ route, navigation }) {
   const { name } = route.params || { name: 'Nome padrão' };
@@ -115,7 +116,7 @@ export default function ProfileScreen({ route, navigation }) {
       <View style={styles.actionButtons}>
         <View style={styles.buttonContainer}>
           <TouchableOpacity style={styles.roundButton} onPress={handleRegisterPoint}>
-            <Icon name="clock-o" size={20} color='white' />
+            <Icon name="clock" size={20} color='white' />
           </TouchableOpacity>
           <Text style={styles.buttonText}>Registrar Ponto</Text>
         </View>
@@ -123,16 +124,16 @@ export default function ProfileScreen({ route, navigation }) {
           <TouchableOpacity style={styles.roundButton} onPress={() => navigation.navigate('PointsTableScreen')}>
             <Icon name="calendar" size={20} color='white' />
           </TouchableOpacity>
-          <Text style={styles.buttonText}>Batidas do Mês</Text>
+          <Text style={styles.buttonText}>Pontos Batidos</Text>
         </View>
       </View>
 
       {/* Footer com ícone de Home */}
       <View style={styles.footer}>
-        <TouchableOpacity onPress={() => navigation.navigate('Home')}>
+        <View style={styles.disabledButton}>
           <Icon name="home" style={styles.footerIcon} />
           <Text style={styles.footerText}>Home</Text>
-        </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
@@ -161,19 +162,16 @@ const styles = StyleSheet.create({
     borderWidth: 3,
     borderColor: '#007BFF',
     marginBottom: 10,
-    marginRight: 190,
   },
   welcomeText: {
     fontSize: 18,
     color: '#333',
-    marginTop: -100,
   },
   userName: {
-    fontSize: 15,
+    fontSize: 18,
     fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 35,
     color: '#007BFF',
+    marginTop: 10, // Adicione margem superior para espaçar o nome da imagem
   },
   actionButtons: {
     flexDirection: 'row',
@@ -196,7 +194,7 @@ const styles = StyleSheet.create({
   buttonText: {
     marginTop: 5, // Espaçamento entre o botão e o texto
     color: 'black', // Cor do texto
-    fontSize: 12, // Tamanho da fonte
+    fontSize: 14, // Tamanho da fonte
   },
   footer: {
     position: 'absolute',
@@ -206,13 +204,18 @@ const styles = StyleSheet.create({
     backgroundColor: '#007BFF', // Cor de fundo azul
     paddingVertical: 10,
     borderTopWidth: 1,
-    borderTopColor: '#0056b3', // Borda superior mais escura
+    borderTopColor: '#007BFF', // Borda superior mais escura
     alignItems: 'center',
     justifyContent: 'center',
     elevation: 5, // Sombra para destaque
   },
+  disabledButton: { 
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
   footerIcon: {
-    fontSize: 32,
+    fontSize: 25,
     color: 'white', // Cor do ícone
   },
   footerText: {
