@@ -1,8 +1,9 @@
 import React from 'react';
-import { View, Text, FlatList, StyleSheet } from 'react-native';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
 import { usePoints } from './PointsProvider';
+import Icon from 'react-native-vector-icons/Feather';
 
-export default function PointsTableScreen() {
+export default function PointsTableScreen({ navigation }) {
   const { points } = usePoints();
 
   return (
@@ -25,6 +26,14 @@ export default function PointsTableScreen() {
         )}
         ListEmptyComponent={<Text style={styles.emptyText}>Nenhum ponto marcado.</Text>}
       />
+
+      {/* Footer com ícone de Home */}
+      <View style={styles.footer}>
+        <TouchableOpacity style={styles.homeButton} onPress={() => navigation.navigate('ProfileScreen')}>
+          <Icon name="home" style={styles.footerIcon} />
+          <Text style={styles.footerText}>Home</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -68,5 +77,31 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#999',
     textAlign: 'center',
+  },
+  footer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: '#007BFF',
+    paddingVertical: 10,
+    borderTopWidth: 1,
+    borderTopColor: '#007BFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 5,
+  },
+  homeButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  footerIcon: {
+    fontSize: 25,
+    color: 'white',
+  },
+  footerText: {
+    color: 'white',
+    fontSize: 12,
+    marginTop: 4,
   },
 });

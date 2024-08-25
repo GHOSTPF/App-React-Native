@@ -1,13 +1,29 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, TextInput, View, Button, Alert, Image } from 'react-native';
+import { StyleSheet, Text, TextInput, View, Button, Alert, Image, TouchableOpacity } from 'react-native';
+import * as LocalAuthentication from 'expo-local-authentication';
 
 export default function LoginScreen({ navigation }) {
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (name && password) {
-      navigation.navigate('Profile', { name });
+      const isBiometricSupported = await LocalAuthentication.hasHardwareAsync();
+      const isBiometricEnrolled = await LocalAuthentication.isEnrolledAsync();
+
+      if (isBiometricSupported && isBiometricEnrolled) {
+        const auth = await LocalAuthentication.authenticateAsync({
+          promptMessage: 'Login com Biometria',
+        });
+
+        if (auth.success) {
+          navigation.navigate('Profile', { name });
+        } else {
+          Alert.alert('Login', 'Autenticação biométrica falhou.');
+        }
+      } else {
+        navigation.navigate('Profile', { name });
+      }
     } else {
       Alert.alert('Login', 'Por favor, insira seu nome e senha.');
     }
@@ -16,7 +32,6 @@ export default function LoginScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <Image source={require('../assets/favicon-vivon.png')} style={styles.logo} />
-      
       
       <View style={styles.inputContainer}>
         <TextInput
@@ -40,6 +55,10 @@ export default function LoginScreen({ navigation }) {
       </View>
       
       <Button title="Entrar" style={styles.buttonLogin} onPress={handleLogin} />
+      
+      <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+        <Text style={styles.registerText}>Não tem uma conta? Registre-se</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -49,7 +68,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     padding: 16,
-    backgroundColor: '#F5F5F5', // Fundo suave para destacar os campos
+    backgroundColor: '#F5F5F5',
   },
   inputContainer: {
     flexDirection: 'row',
@@ -72,18 +91,18 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#333',
   },
-  icon: {
-    width: 24,
-    height: 24,
-    marginRight: 8,
-  },
   logo: {
-    width: 120, // Aumenta a largura
-    height: 118, // Aumenta a altura
+    width: 120,
+    height: 118,
     alignSelf: 'center',
     marginBottom: 40,
-},
+  },
   buttonLogin: {
     borderRadius: 15,
-  }
+  },
+  registerText: {
+    marginTop: 20,
+    color: '#007BFF',
+    textAlign: 'center',
+  },
 });

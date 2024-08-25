@@ -3,7 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import ProfileScreen from './screens/ProfileScreen';
 import PointsTableScreen from './screens/PointsTableScreen';
 import LoginScreen from './screens/LoginScreen';
-import { PointsProvider } from './screens/PointsProvider'; // Certifique-se de importar corretamente
+import { PointsProvider } from './screens/PointsProvider';
 import RegisterScreen from './screens/RegisterScreen';
 import PointConfirmationScreen from './screens/PointConfirmationScreen';
 
@@ -15,7 +15,8 @@ export default function App() {
       <PointsProvider>
         <Stack.Navigator initialRouteName="Login">
           <Stack.Screen name="Login" component={LoginScreen} />
-          <Stack.Screen name="Profile" component={ProfileScreen} />
+          <Stack.Screen name="Register" component={RegisterScreen} />
+          <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
           <Stack.Screen name="PointsTableScreen" component={PointsTableScreen} />
           <Stack.Screen name="PointConfirmationScreen" component={PointConfirmationScreen} />
         </Stack.Navigator>
