@@ -17,12 +17,12 @@ export default function LoginScreen({ navigation }) {
         });
 
         if (auth.success) {
-          navigation.navigate('Profile', { name });
+          navigation.navigate('ProfileScreen', { name });
         } else {
           Alert.alert('Login', 'Autenticação biométrica falhou.');
         }
       } else {
-        navigation.navigate('Profile', { name });
+        navigation.navigate('ProfileScreen', { name });
       }
     } else {
       Alert.alert('Login', 'Por favor, insira seu nome e senha.');

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, TextInput, Button, Alert, StyleSheet } from 'react-native';
+import { View, TextInput, Button, Alert, StyleSheet, Image } from 'react-native';
 import * as LocalAuthentication from 'expo-local-authentication';
 
 export default function RegisterScreen({ navigation }) {
@@ -28,6 +28,8 @@ export default function RegisterScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
+      <Image source={require('../assets/favicon-vivon.png')} style={styles.logo} />
+
       <TextInput
         style={styles.input}
         placeholder="Nome"
@@ -61,5 +63,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     marginBottom: 16,
     backgroundColor: '#FFF',
+  },
+  logo: {
+    width: 120,
+    height: 118,
+    alignSelf: 'center',
+    marginBottom: 40,
   },
 });
