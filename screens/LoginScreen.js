@@ -1,31 +1,60 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, TextInput, View, Button, Alert, Image, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, TextInput, View, TouchableOpacity, Alert, Image } from 'react-native';
 import * as LocalAuthentication from 'expo-local-authentication';
+import { api } from '../services/api';  // Ajuste o caminho conforme necessário
+import AsyncStorage from '@react-native-async-storage/async-storage'; // Para armazenar o token localmente
 
 export default function LoginScreen({ navigation }) {
-  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
   const handleLogin = async () => {
-    if (name && password) {
-      const isBiometricSupported = await LocalAuthentication.hasHardwareAsync();
-      const isBiometricEnrolled = await LocalAuthentication.isEnrolledAsync();
+    if (email && password) {
+      try {
+        const headers = {
+          'Content-Type': 'application/json',
+        };
 
-      if (isBiometricSupported && isBiometricEnrolled) {
-        const auth = await LocalAuthentication.authenticateAsync({
-          promptMessage: 'Login com Biometria',
-        });
+        const response = await api.post('/login', { email, password }, { headers });
+        console.log("Resposta da API:", response.data);
 
-        if (auth.success) {
-          navigation.navigate('ProfileScreen', { name });
+        if (response.status === 200) {
+          const { token, user, user_id } = response.data.data;
+
+          if (token) {
+            console.log("Token recebido:", token);
+            await AsyncStorage.setItem('userToken', token);
+            await AsyncStorage.setItem('userName', user);
+            await AsyncStorage.setItem('userId', user_id.toString());
+
+            const isBiometricSupported = await LocalAuthentication.hasHardwareAsync();
+            const isBiometricEnrolled = await LocalAuthentication.isEnrolledAsync();
+
+            if (isBiometricSupported && isBiometricEnrolled) {
+              const auth = await LocalAuthentication.authenticateAsync({
+                promptMessage: 'Login com Biometria',
+              });
+
+              if (auth.success) {
+                navigation.navigate('ProfileScreen', { email });
+              } else {
+                Alert.alert('Login', 'Autenticação biométrica falhou.');
+              }
+            } else {
+              navigation.navigate('ProfileScreen', { email });
+            }
+          } else {
+            Alert.alert('Login', 'Token não recebido. Verifique a resposta da API.');
+          }
         } else {
-          Alert.alert('Login', 'Autenticação biométrica falhou.');
+          Alert.alert('Login', `Erro: ${response.status} - ${response.statusText}`);
         }
-      } else {
-        navigation.navigate('ProfileScreen', { name });
+      } catch (error) {
+        console.log("Erro na requisição:", error.response ? error.response.data : error.message);
+        Alert.alert('Erro', `Erro ao fazer login. Status: ${error.response ? error.response.status : 'Desconhecido'} - ${error.message}`);
       }
     } else {
-      Alert.alert('Login', 'Por favor, insira seu nome e senha.');
+      Alert.alert('Login', 'Por favor, insira seu email e senha.');
     }
   };
 
@@ -36,9 +65,9 @@ export default function LoginScreen({ navigation }) {
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
-          placeholder="Nome"
-          value={name}
-          onChangeText={setName}
+          placeholder="Email"
+          value={email}
+          onChangeText={setEmail}
           placeholderTextColor="#A9A9A9"
         />
       </View>
@@ -54,7 +83,9 @@ export default function LoginScreen({ navigation }) {
         />
       </View>
       
-      <Button title="Entrar" style={styles.buttonLogin} onPress={handleLogin} />
+      <TouchableOpacity style={styles.buttonLogin} onPress={handleLogin}>
+        <Text style={styles.buttonText}>Entrar</Text>
+      </TouchableOpacity>
       
       <TouchableOpacity onPress={() => navigation.navigate('Register')}>
         <Text style={styles.registerText}>Não tem uma conta? Registre-se</Text>
@@ -98,7 +129,16 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   buttonLogin: {
-    borderRadius: 15,
+    backgroundColor: '#007BFF',
+    borderRadius: 8,
+    padding: 12,
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  buttonText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
   registerText: {
     marginTop: 20,

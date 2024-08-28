@@ -2,24 +2,21 @@ import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Alert, Image, ActionSheetIOS, Platform } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Camera } from 'expo-camera';
-import * as LocalAuthentication from 'expo-local-authentication';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { usePoints } from './PointsProvider'; // Importa o hook
+import { usePoints } from './PointsProvider';
 import Icon from 'react-native-vector-icons/Feather';
-import { disableErrorHandling } from 'expo';
 
 export default function ProfileScreen({ route, navigation }) {
-  const { name } = route.params || { name: 'Nome padrão' };
+  const { name, email } = route.params || { name: 'Nome padrão', email: 'email@exemplo.com' };
   const [profileImage, setProfileImage] = useState('https://via.placeholder.com/150');
-  const { points, setPoints } = usePoints(); // Usando o contexto
+  const { points, setPoints } = usePoints();
 
   useEffect(() => {
     async function loadData() {
       try {
         const storedTimeStamp = await AsyncStorage.getItem('timeStamp');
         if (storedTimeStamp) {
-          // O uso de setTimeStamp foi removido, pois não está definido
-          // Você pode usar os dados carregados conforme necessário
+          // Usar os dados carregados conforme necessário
         }
       } catch (error) {
         console.error("Failed to load timeStamp", error);
@@ -29,7 +26,6 @@ export default function ProfileScreen({ route, navigation }) {
   }, []);
 
   function handleRegisterPoint() {
-    // Navegar para a tela de confirmação de ponto
     navigation.navigate('PointConfirmationScreen', { name });
   }
 
@@ -101,7 +97,6 @@ export default function ProfileScreen({ route, navigation }) {
 
   return (
     <View style={styles.container}>
-      {/* Card de Perfil */}
       <View style={styles.profileCard}>
         <TouchableOpacity onPress={openActionSheet}>
           <Image
@@ -110,7 +105,7 @@ export default function ProfileScreen({ route, navigation }) {
           />
         </TouchableOpacity>
         <Text style={styles.welcomeText}>Olá,</Text>
-        <Text style={styles.userName}>{name}</Text>
+        <Text style={styles.userEmail}>{email}</Text>
       </View>
 
       <View style={styles.actionButtons}>
@@ -128,7 +123,6 @@ export default function ProfileScreen({ route, navigation }) {
         </View>
       </View>
 
-      {/* Footer com ícone de Home */}
       <View style={styles.footer}>
         <View style={styles.disabledButton}>
           <Icon name="home" style={styles.footerIcon} />
@@ -171,52 +165,56 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: '#007BFF',
-    marginTop: 10, // Adicione margem superior para espaçar o nome da imagem
+    marginTop: 10,
+  },
+  userEmail: {
+    fontSize: 14,
+    color: '#555',
+    
   },
   actionButtons: {
     flexDirection: 'row',
-    justifyContent: 'space-around', // Espaça os botões igualmente
-    width: '100%', // Garante que os botões ocupem toda a largura disponível
-    paddingHorizontal: 20, // Adiciona espaço nas laterais
+    justifyContent: 'space-around',
+    width: '100%',
+    paddingHorizontal: 20,
   },
   buttonContainer: {
     alignItems: 'center',
   },
   roundButton: {
-    backgroundColor: '#007BFF', // Cor azul
+    backgroundColor: '#007BFF',
     borderRadius: 50,
-    padding: 10, // Ajusta o padding para o tamanho desejado
+    padding: 10,
     alignItems: 'center',
     justifyContent: 'center',
-    width: 50, // Ajusta a largura para o padding
-    height: 50, // Ajusta a altura para o padding
+    width: 50,
+    height: 50,
   },
   buttonText: {
-    marginTop: 5, // Espaçamento entre o botão e o texto
-    color: 'black', // Cor do texto
-    fontSize: 14, // Tamanho da fonte
+    marginTop: 5,
+    color: 'black',
+    fontSize: 14,
   },
   footer: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: '#007BFF', // Cor de fundo azul
+    backgroundColor: '#007BFF',
     paddingVertical: 10,
     borderTopWidth: 1,
-    borderTopColor: '#007BFF', // Borda superior mais escura
+    borderTopColor: '#007BFF',
     alignItems: 'center',
     justifyContent: 'center',
-    elevation: 5, // Sombra para destaque
+    elevation: 5,
   },
-  disabledButton: { 
+  disabledButton: {
     alignItems: 'center',
     justifyContent: 'center',
   },
-
   footerIcon: {
     fontSize: 25,
-    color: 'white', // Cor do ícone
+    color: 'white',
   },
   footerText: {
     color: 'white',
