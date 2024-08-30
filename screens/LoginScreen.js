@@ -23,7 +23,7 @@ export default function LoginScreen({ navigation }) {
 
           if (token) {
             console.log("Token recebido:", token);
-            await AsyncStorage.setItem('userToken', token);
+            await AsyncStorage.setItem('authToken', token); // Corrigido para 'authToken'
             await AsyncStorage.setItem('userName', user);
             await AsyncStorage.setItem('userId', user_id.toString());
 
@@ -60,7 +60,7 @@ export default function LoginScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <Image source={require('../assets/favicon-vivon.png')} style={styles.logo} />
+      <Image source={require('../assets/vivon-native1.gif')} style={styles.logo} />
       
       <View style={styles.inputContainer}>
         <TextInput
@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   logo: {
-    width: 120,
+    width: 180,
     height: 118,
     alignSelf: 'center',
     marginBottom: 40,

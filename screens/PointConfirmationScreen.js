@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Button, StyleSheet, Alert } from 'react-native';
+import { View, Text, StyleSheet, Alert, TouchableOpacity } from 'react-native';
 import * as LocalAuthentication from 'expo-local-authentication';
 import * as Location from 'expo-location';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import MapView, { Marker } from 'react-native-maps';
 import { usePoints } from './PointsProvider';
+import { api } from '../services/api';
 
 export default function PointConfirmationScreen({ route, navigation }) {
-    const { name } = route.params;
+    const { email } = route.params;
     const { addPoint } = usePoints();
     const [location, setLocation] = useState(null);
     const [address, setAddress] = useState('');
@@ -29,7 +30,7 @@ export default function PointConfirmationScreen({ route, navigation }) {
                 longitude: loc.coords.longitude,
             });
 
-            const currentAddress = `${reverseGeocode.street}, ${reverseGeocode.streetNumber}`;
+            const currentAddress = `${reverseGeocode.street}, ${reverseGeocode.streetNumber || ''}`;
             setAddress(currentAddress);
 
             const currentDateTime = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
@@ -50,48 +51,79 @@ export default function PointConfirmationScreen({ route, navigation }) {
             });
 
             if (auth.success) {
-                const newPoint = { name, dateTime, address };
+                const newPoint = { email, dateTime, address };
 
+                // Adiciona o ponto localmente
                 addPoint(newPoint);
                 const storedPoints = await AsyncStorage.getItem('points');
                 const prevPoints = storedPoints ? JSON.parse(storedPoints) : [];
-                await AsyncStorage.setItem('points', JSON.stringify([...prevPoints, newPoint]));
+                const updatedPoints = [...prevPoints, newPoint];
+                await AsyncStorage.setItem('points', JSON.stringify(updatedPoints));
+                await AsyncStorage.setItem('timeStamp', dateTime);
 
-                navigation.navigate('PointsTableScreen');
+                // Recupera o token armazenado corretamente
+                const token = await AsyncStorage.getItem('userToken');
+                
+                if (!token) {
+                    Alert.alert('Erro', 'Token de autenticação não encontrado.');
+                    return;
+                }
+
+                console.log("Token utilizado na requisição:", token);
+
+                // Envia os dados para a API com o token no cabeçalho
+                const response = await api.post('/brands', {
+                    pessoa: email,
+                    horario: dateTime,
+                    local: address,
+                }, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    }
+                });
+
+                Alert.alert('Sucesso', 'Ponto registrado com sucesso!');
+                navigation.goBack();
+            } else {
+                Alert.alert('Erro', 'Falha na autenticação biométrica.');
             }
         } catch (error) {
-            console.error("Failed to authenticate or register point", error);
-            Alert.alert('Erro', 'Não foi possível registrar o ponto. Por favor, tente novamente.');
+            console.error("Erro ao registrar ponto:", error.response ? error.response.data : error.message);
+            Alert.alert('Erro', `Ocorreu um erro ao tentar registrar o ponto. Status: ${error.response ? error.response.status : 'Desconhecido'} - ${error.message}`);
         }
     }
 
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>Confirmação de Ponto</Text>
-            <View style={styles.infoContainer}>
-                <Text style={styles.infoText}>Nome: {name || 'Nome não disponível'}</Text>
-                <Text style={styles.infoText}>Data e Hora: {dateTime || 'Data e Hora não disponíveis'}</Text>
-                <Text style={styles.infoText}>Endereço: {address || 'Endereço não disponível'}</Text>
-            </View>
+            <Text style={styles.email}>{email}</Text>
+            <Text style={styles.label}>Data e Hora:</Text>
+            <Text style={styles.value}>{dateTime}</Text>
+
             {location && (
-                <MapView
-                    style={styles.map}
-                    initialRegion={{
-                        latitude: location.coords.latitude,
-                        longitude: location.coords.longitude,
-                        latitudeDelta: 0.005,
-                        longitudeDelta: 0.005,
-                    }}>
-                    <Marker
-                        coordinate={{
+                <>
+                    <Text style={styles.label}>Localização:</Text>
+                    <Text style={styles.value}>{address}</Text>
+                    <MapView
+                        style={styles.map}
+                        initialRegion={{
                             latitude: location.coords.latitude,
                             longitude: location.coords.longitude,
-                        }}
-                        title={'Sua Localização'}
-                    />
-                </MapView>
+                            latitudeDelta: 0.005,
+                            longitudeDelta: 0.005,
+                        }}>
+                        <Marker
+                            coordinate={{
+                                latitude: location.coords.latitude,
+                                longitude: location.coords.longitude,
+                            }}
+                        />
+                    </MapView>
+                </>
             )}
-            <Button title="Registrar Ponto" onPress={handleRegistration} />
+
+            <TouchableOpacity style={styles.registerButton} onPress={handleRegistration}>
+                <Text style={styles.buttonText}>Confirmar Registro</Text>
+            </TouchableOpacity>
         </View>
     );
 }
@@ -99,26 +131,39 @@ export default function PointConfirmationScreen({ route, navigation }) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#f5f5f5',
         padding: 16,
+        backgroundColor: '#f5f5f5',
+        alignItems: 'center',
     },
-    title: {
-        fontSize: 24,
+    email: {
+        fontSize: 18,
         fontWeight: 'bold',
         marginBottom: 20,
     },
-    infoContainer: {
-        marginBottom: 30,
+    label: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        marginTop: 10,
     },
-    infoText: {
-        fontSize: 18,
+    value: {
+        fontSize: 16,
         marginBottom: 10,
     },
     map: {
         width: '100%',
         height: 200,
-        marginBottom: 20,
+        marginTop: 10,
+        borderRadius: 10,
+    },
+    registerButton: {
+        marginTop: 20,
+        backgroundColor: '#007BFF',
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+        borderRadius: 5,
+    },
+    buttonText: {
+        color: 'white',
+        fontSize: 16,
     },
 });

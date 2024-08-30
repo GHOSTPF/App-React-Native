@@ -19,7 +19,7 @@ export default function PointsTableScreen({ navigation }) {
         keyExtractor={(item, index) => index.toString()}
         renderItem={({ item }) => (
           <View style={styles.tableRow}>
-            <Text style={styles.cell}>{item.name}</Text>
+            <Text style={styles.cell}>{item.email}</Text>
             <Text style={styles.cell}>{item.dateTime}</Text>
             <Text style={styles.cell}>{item.address}</Text>
           </View>

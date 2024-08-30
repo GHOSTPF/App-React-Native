@@ -26,7 +26,7 @@ export default function ProfileScreen({ route, navigation }) {
   }, []);
 
   function handleRegisterPoint() {
-    navigation.navigate('PointConfirmationScreen', { name });
+    navigation.navigate('PointConfirmationScreen', { email });  // Passando o email ao navegar
   }
 
   async function selectImageFromGallery() {
