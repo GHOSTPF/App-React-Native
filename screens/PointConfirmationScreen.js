@@ -71,11 +71,16 @@ export default function PointConfirmationScreen({ route, navigation }) {
 
                 console.log("Token utilizado na requisição:", token);
 
+                // Construir o objeto a ser enviado no campo `brand`
+                const brandData = {
+                    email: email,       // Email do usuário
+                    horario: dateTime,  // Data e Hora
+                    local: address      // Localização
+                };
+
                 // Envia os dados para a API com o token no cabeçalho
                 const response = await api.post('/brands', {
-                    brand: email, // Ajuste para enviar o dado correto no campo `brand`
-                    horario: dateTime,
-                    local: address,
+                    brand: JSON.stringify(brandData)  // Envia o objeto como uma string JSON
                 }, {
                     headers: {
                         Authorization: `Bearer ${token}`,
