@@ -62,7 +62,7 @@ export default function PointConfirmationScreen({ route, navigation }) {
                 await AsyncStorage.setItem('timeStamp', dateTime);
 
                 // Recupera o token armazenado corretamente
-                const token = await AsyncStorage.getItem('userToken');
+                const token = await AsyncStorage.getItem('authToken');
                 
                 if (!token) {
                     Alert.alert('Erro', 'Token de autenticação não encontrado.');
@@ -73,7 +73,7 @@ export default function PointConfirmationScreen({ route, navigation }) {
 
                 // Envia os dados para a API com o token no cabeçalho
                 const response = await api.post('/brands', {
-                    pessoa: email,
+                    brand: email, // Ajuste para enviar o dado correto no campo `brand`
                     horario: dateTime,
                     local: address,
                 }, {
@@ -82,8 +82,12 @@ export default function PointConfirmationScreen({ route, navigation }) {
                     }
                 });
 
-                Alert.alert('Sucesso', 'Ponto registrado com sucesso!');
-                navigation.goBack();
+                if (response.status === 200) {
+                    Alert.alert('Sucesso', 'Ponto registrado com sucesso!');
+                    navigation.goBack();
+                } else {
+                    Alert.alert('Erro', 'Não foi possível registrar o ponto. Por favor, tente novamente.');
+                }
             } else {
                 Alert.alert('Erro', 'Falha na autenticação biométrica.');
             }
