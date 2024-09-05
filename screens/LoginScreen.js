@@ -1,29 +1,50 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, TextInput, View, TouchableOpacity, Alert, Image } from 'react-native';
 import * as LocalAuthentication from 'expo-local-authentication';
 import { api } from '../services/api';  // Ajuste o caminho conforme necessário
-import AsyncStorage from '@react-native-async-storage/async-storage'; // Para armazenar o token localmente
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import NetInfo from '@react-native-community/netinfo';
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isConnected, setIsConnected] = useState(true);
+
+  // Função para sincronizar pontos offline
+  const syncPoints = async () => {
+    try {
+      const offlinePoints = await getOfflinePoints();
+      for (const point of offlinePoints) {
+        await api.post('/brands', point);  // Ajuste para o endpoint correto da API
+      }
+      await clearOfflinePoints();
+    } catch (error) {
+      console.error("Erro ao sincronizar pontos:", error);
+    }
+  };
+
+  useEffect(() => {
+    const unsubscribe = NetInfo.addEventListener(state => {
+      if (state.isConnected) {
+        syncPoints();  // Sincronizar pontos se a conexão estiver disponível
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   const handleLogin = async () => {
     if (email && password) {
       try {
-        const headers = {
-          'Content-Type': 'application/json',
-        };
-
-        const response = await api.post('/login', { email, password }, { headers });
-        console.log("Resposta da API:", response.data);
+        const response = await api.post('/login', { email, password }, {
+          headers: { 'Content-Type': 'application/json' }
+        });
 
         if (response.status === 200) {
           const { token, user, user_id } = response.data.data;
 
           if (token) {
-            console.log("Token recebido:", token);
-            await AsyncStorage.setItem('authToken', token); // Corrigido para 'authToken'
+            await AsyncStorage.setItem('authToken', token);
             await AsyncStorage.setItem('userName', user);
             await AsyncStorage.setItem('userId', user_id.toString());
 
@@ -50,7 +71,7 @@ export default function LoginScreen({ navigation }) {
           Alert.alert('Login', `Erro: ${response.status} - ${response.statusText}`);
         }
       } catch (error) {
-        console.log("Erro na requisição:", error.response ? error.response.data : error.message);
+        console.error("Erro na requisição:", error.response ? error.response.data : error.message);
         Alert.alert('Erro', `Erro ao fazer login. Status: ${error.response ? error.response.status : 'Desconhecido'} - ${error.message}`);
       }
     } else {
@@ -146,3 +167,35 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
+
+// Funções para gerenciar pontos offline
+const saveOfflinePoint = async (point) => {
+  try {
+    const existingPoints = await AsyncStorage.getItem('offlinePoints');
+    const points = existingPoints ? JSON.parse(existingPoints) : [];
+
+    points.push(point);
+
+    await AsyncStorage.setItem('offlinePoints', JSON.stringify(points));
+  } catch (error) {
+    console.error("Erro ao salvar ponto offline:", error);
+  }
+};
+
+const getOfflinePoints = async () => {
+  try {
+    const points = await AsyncStorage.getItem('offlinePoints');
+    return points ? JSON.parse(points) : [];
+  } catch (error) {
+    console.error("Erro ao obter pontos offline:", error);
+    return [];
+  }
+};
+
+const clearOfflinePoints = async () => {
+  try {
+    await AsyncStorage.removeItem('offlinePoints');
+  } catch (error) {
+    console.error("Erro ao limpar pontos offline:", error);
+  }
+};

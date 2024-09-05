@@ -1,21 +1,16 @@
-import React, { createContext, useContext, useState } from 'react';
+// PointsProvider.js
+import React, { createContext, useState, useContext } from 'react';
 
 const PointsContext = createContext();
 
-export function PointsProvider({ children }) {
+export const PointsProvider = ({ children }) => {
   const [points, setPoints] = useState([]);
 
-  const addPoint = (newPoint) => {
-    setPoints(prevPoints => [...prevPoints, newPoint]);
-  };
-
   return (
-    <PointsContext.Provider value={{ points, addPoint }}>
+    <PointsContext.Provider value={{ points, setPoints }}>
       {children}
     </PointsContext.Provider>
   );
-}
+};
 
-export function usePoints() {
-  return useContext(PointsContext);
-}
+export const usePoints = () => useContext(PointsContext);

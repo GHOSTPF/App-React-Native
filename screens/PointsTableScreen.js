@@ -26,7 +26,6 @@ export default function PointsTableScreen({ navigation }) {
         )}
         ListEmptyComponent={<Text style={styles.emptyText}>Nenhum ponto marcado.</Text>}
       />
-
       {/* Footer com ícone de Home */}
       <View style={styles.footer}>
         <TouchableOpacity style={styles.homeButton} onPress={() => navigation.navigate('ProfileScreen')}>
