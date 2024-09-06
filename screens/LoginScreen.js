@@ -39,23 +39,26 @@ export default function LoginScreen({ navigation }) {
         const response = await api.post('/login', { email, password }, {
           headers: { 'Content-Type': 'application/json' }
         });
-
+  
         if (response.status === 200) {
           const { token, user, user_id } = response.data.data;
-
+  
           if (token) {
             await AsyncStorage.setItem('authToken', token);
             await AsyncStorage.setItem('userName', user);
             await AsyncStorage.setItem('userId', user_id.toString());
-
+  
+            // Adicione o console.log para exibir o token
+            console.log('Token recebido:', token);
+  
             const isBiometricSupported = await LocalAuthentication.hasHardwareAsync();
             const isBiometricEnrolled = await LocalAuthentication.isEnrolledAsync();
-
+  
             if (isBiometricSupported && isBiometricEnrolled) {
               const auth = await LocalAuthentication.authenticateAsync({
                 promptMessage: 'Login com Biometria',
               });
-
+  
               if (auth.success) {
                 navigation.navigate('ProfileScreen', { email });
               } else {
@@ -78,6 +81,7 @@ export default function LoginScreen({ navigation }) {
       Alert.alert('Login', 'Por favor, insira seu email e senha.');
     }
   };
+  
 
   return (
     <View style={styles.container}>
@@ -108,9 +112,6 @@ export default function LoginScreen({ navigation }) {
         <Text style={styles.buttonText}>Entrar</Text>
       </TouchableOpacity>
       
-      <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-        <Text style={styles.registerText}>Não tem uma conta? Registre-se</Text>
-      </TouchableOpacity>
     </View>
   );
 }

@@ -12,21 +12,28 @@ export default function ProfileScreen({ route, navigation }) {
   const { points, setPoints } = usePoints();
 
   useEffect(() => {
-    async function loadData() {
+    // Carregar imagem de perfil do AsyncStorage quando a tela é iniciada
+    async function loadProfileImage() {
       try {
-        const storedTimeStamp = await AsyncStorage.getItem('timeStamp');
-        if (storedTimeStamp) {
-          // Usar os dados carregados conforme necessário
+        const storedImage = await AsyncStorage.getItem('profileImage');
+        if (storedImage) {
+          setProfileImage(storedImage); // Se houver imagem salva, usa ela
         }
       } catch (error) {
-        console.error("Failed to load timeStamp", error);
+        console.error("Failed to load profile image", error);
       }
     }
-    loadData();
+    loadProfileImage();
   }, []);
 
-  function handleRegisterPoint() {
-    navigation.navigate('PointConfirmationScreen', { email });  // Passando o email ao navegar
+  // Função para salvar a imagem no AsyncStorage
+  async function saveProfileImage(uri) {
+    try {
+      await AsyncStorage.setItem('profileImage', uri); // Salva a URI da imagem no AsyncStorage
+      setProfileImage(uri); // Atualiza a imagem de perfil
+    } catch (error) {
+      console.error("Failed to save profile image", error);
+    }
   }
 
   async function selectImageFromGallery() {
@@ -39,7 +46,7 @@ export default function ProfileScreen({ route, navigation }) {
       });
 
       if (!result.canceled) {
-        setProfileImage(result.assets[0].uri);
+        saveProfileImage(result.assets[0].uri); // Salva a imagem selecionada
       }
     } catch (error) {
       console.error("Failed to select image from gallery", error);
@@ -57,7 +64,7 @@ export default function ProfileScreen({ route, navigation }) {
         });
 
         if (!result.canceled) {
-          setProfileImage(result.assets[0].uri);
+          saveProfileImage(result.assets[0].uri); // Salva a foto tirada
         }
       } else {
         Alert.alert('Permissão negada', 'É necessário permitir o uso da câmera para tirar fotos.');
@@ -110,7 +117,7 @@ export default function ProfileScreen({ route, navigation }) {
 
       <View style={styles.actionButtons}>
         <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.roundButton} onPress={handleRegisterPoint}>
+          <TouchableOpacity style={styles.roundButton} onPress={() => navigation.navigate('PointConfirmationScreen', { email })}>
             <Icon name="clock" size={20} color='white' />
           </TouchableOpacity>
           <Text style={styles.buttonText}>Registrar Ponto</Text>
