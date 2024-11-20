@@ -25,11 +25,6 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "extra": {
-      "eas": {
-        "projectId": "48541c82-665b-49ba-ae59-749210ca34c7"
-      }
-    },
     "owner": "dev_tavares"
   }
 }
